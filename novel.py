@@ -1,17 +1,18 @@
 # coding:utf-8
+import logging
+LOG_FORMAT = "%(asctime)s  %(levelname)s  %(message)s"
+logging.basicConfig(filename='aaaa.log', level=logging.DEBUG, format=LOG_FORMAT,filemode='w')
+
 import requests
 import random
 import re
-import logging
+
 
 from encoding import get_encoding
 from getGeneticNextPage import get_next_page_url
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup 
 from stringConvert import convertQ2B
-
-LOG_FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
-logging.basicConfig(filename='小说.log', level=logging.DEBUG, format=LOG_FORMAT)
-
+ 
 pattern = re.compile(r'www.{1,20}com.?】')
 # patternBQG = re.compile(r'笔趣阁')
 
