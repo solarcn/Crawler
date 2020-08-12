@@ -3,3 +3,7 @@ novel_temp.txt
 *.log
 novel.spec
 build/*
+venv/*
+test.py
+.vscode/*
+.idea/*
