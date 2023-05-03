@@ -64,11 +64,12 @@ def getContent(url):
     #     logging.debug(r.headers.getparam('charset'))
     #    r.encoding = 'gbk'
     #     r.encoding = 'utf-8'
-    soup = BeautifulSoup(r.text, 'lxml')
+    #lxml
+    soup = BeautifulSoup(r.text, 'html5lib')
     encoding = get_encoding(soup)
     if (encoding != None):
         r.encoding = encoding;
-        soup = BeautifulSoup(r.text, 'lxml')
+        soup = BeautifulSoup(r.text, 'html5lib')
 
     result += soup.find('title').text
 
