@@ -40,8 +40,12 @@ def getHeaders(url):
         'Lynx/2.8.5rel.1 libwww-FM/2.14 SSL-MM/1.4.1 GNUTLS/1.2.9',
         "Mozilla/5.0 (X11; Linux i686) AppleWebKit/535.7 (KHTML, like Gecko) Ubuntu/11.04 Chromium/16.0.912.77 Chrome/16.0.912.77 Safari/535.7",
         "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:10.0) Gecko/20100101 Firefox/10.0 ",
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',   # my computer
+        'Mozilla/5.0 (Linux; Android 6.0;Nexus 5 Build/MRA58N) AppleWebKit/537.36(KHTML, like Gecko) Chrome/115.0.0.0 Mobile Safari/537.36'
+        "Mozilla/5.0 (Windows NT 6.1; rv:45.0) Gecko/20100101 Firefox/45.0"
     ]
     agent = random.choice(user_agents)  # 每次随机抽取一个伪装的客户端浏览器版本号
+
     headers = {'content-type': 'application/json',
                'Referer': url,
                'User-Agent': agent}
@@ -64,7 +68,7 @@ def getContent(url):
     #     logging.debug(r.headers.getparam('charset'))
     #    r.encoding = 'gbk'
     #     r.encoding = 'utf-8'
-    #lxml
+    #lxml更快
     soup = BeautifulSoup(r.text, 'html5lib')
     encoding = get_encoding(soup)
     if (encoding != None):
@@ -152,12 +156,12 @@ while 'html' in url and not url.endswith('index.html'):
     #################################################################
     # 处理result
     #################################################################
-    result = result.replace('!', '')
-    result = result.replace('?', '')
-    result = result.replace('"', '')
-    result = result.replace('！', '')
-    result = result.replace('？', '')
-    result = result.replace('”', '')
+    # result = result.replace('!', '')
+    # result = result.replace('?', '')
+    # result = result.replace('"', '')
+    # result = result.replace('！', '')
+    # result = result.replace('？', '')
+    # result = result.replace('”', '')
     file.write(result)
     i += 1
     logging.info('保存了' + str(i) + '章:  ' + title)

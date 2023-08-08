@@ -27,7 +27,7 @@ def get_next_page_url(url,soup):
     urls = soup.find_all('a', href=True)
     
     for u in urls:
-            if u.text.strip() == '下一章' or u.text == '下一页'.strip():
+            if '下一章' in u.text or '下一页' in u.text:
                 next_page = urljoin(url,u['href'])
                 logging.debug("Getting next page url = " + next_page)
                 break
