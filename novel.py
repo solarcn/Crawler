@@ -1,5 +1,7 @@
 # coding:utf-8
 import logging
+import time
+
 LOG_FORMAT = "%(asctime)s  %(levelname)s  %(message)s"
 logging.basicConfig(filename='aaaa.log', level=logging.DEBUG, format=LOG_FORMAT,filemode='w')
 
@@ -57,7 +59,12 @@ def getContent(url):
     title = ''
     nextPage = ''
     logging.info('Sending request to: ' + url)
-    r = requests.get(url, headers=getHeaders(url))
+    try:
+        r = requests.get(url, headers=getHeaders(url))
+    except requests.exceptions.ConnectionError:
+        logging.error("ConnectionError")
+        r = requests.get(url, headers=getHeaders(url))
+
     if (r.status_code != 200):
         print("错误代码: " + str(r.status_code))
         print("错误原因: " + r.reason)
@@ -165,6 +172,7 @@ while 'html' in url and not url.endswith('index.html'):
     file.write(result)
     i += 1
     logging.info('保存了' + str(i) + '章:  ' + title)
+    time.sleep(1)
 
 # nextPage, url2 = getContent(url1 + url2)
 ##logging.debug(nextPage);
