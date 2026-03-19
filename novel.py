@@ -1,4 +1,7 @@
 # coding:utf-8
+import sys
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 import logging
 import time
 
@@ -86,6 +89,7 @@ def getContent(url):
 
     urls = soup.find_all('a', href=True)
     nextPage = get_next_page_url(url, soup)
+    
     novelContent = ''
 
     if (soup.find('div', id='content')):
@@ -155,27 +159,20 @@ def getContent(url):
     return result, nextPage, title
 
 
-file = open(fileName, 'a+', encoding='utf-8')
+with open(fileName, 'a+', encoding='utf-8') as file:
 
-i = 0
-while 'html' in url and not url.endswith('index.html'):
-    result, url, title = getContent(url)
-    #################################################################
-    # 处理result
-    #################################################################
-    # result = result.replace('!', '')
-    # result = result.replace('?', '')
-    # result = result.replace('"', '')
-    # result = result.replace('！', '')
-    # result = result.replace('？', '')
-    # result = result.replace('”', '')
-    file.write(result)
-    i += 1
-    logging.info('保存了' + str(i) + '章:  ' + title)
-    time.sleep(1)
-
-# nextPage, url2 = getContent(url1 + url2)
-##logging.debug(nextPage);
-# file.write(nextPage)
-
-file.close();
+    i = 0
+    while url and url.lower().startswith('http') and 'html' in url.lower() and not url.lower().endswith('index.html'):
+        result, nextPage, title = getContent(url)
+        #################################################################
+        # 处理result
+        #################################################################
+        # result = result.replace('!', '')
+        file.write(result)
+        i += 1
+        logging.info('保存了' + str(i) + '章:  ' + title)
+        if not nextPage or not nextPage.lower().startswith('http') or nextPage == url:
+            logging.warning('停止：没有找到有效的下一页或下一页与当前页面相同')
+            break
+        url = nextPage
+        time.sleep(1)
