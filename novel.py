@@ -25,14 +25,33 @@ pattern = re.compile(r'www.{1,20}com.?】')
 # 八一中文 81xsw.com
 
 
-url = input("请输入网址:").strip()
-if url == '':
-    url = 'http://www.81xsw.com/0_169/10088024.html'
-fileName = input("请输入要保存的文件名,默认novel_temp.txt:")
-if fileName == '':
-    fileName = 'novel_temp.txt'
-elif fileName[-4:] != '.txt':
-    fileName = fileName + '.txt'
+def main():
+    url = input("请输入网址:").strip()
+    if url == '':
+        url = 'http://www.81xsw.com/0_169/10088024.html'
+    fileName = input("请输入要保存的文件名,默认novel_temp.txt:")
+    if fileName == '':
+        fileName = 'novel_temp.txt'
+    elif fileName[-4:] != '.txt':
+        fileName = fileName + '.txt'
+        
+    with open(fileName, 'a+', encoding='utf-8') as file:
+
+        i = 0
+        while url and url.lower().startswith('http') and 'html' in url.lower() and not url.lower().endswith('index.html'):
+            result, nextPage, title = getContent(url)
+            #################################################################
+            # 处理result
+            #################################################################
+            # result = result.replace('!', '')
+            file.write(result)
+            i += 1
+            logging.info('保存了' + str(i) + '章:  ' + title)
+            if not nextPage or not nextPage.lower().startswith('http') or nextPage == url:
+                logging.warning('停止：没有找到有效的下一页或下一页与当前页面相同')
+                break
+            url = nextPage
+            time.sleep(1)
 
 
 def getHeaders(url):
@@ -159,20 +178,8 @@ def getContent(url):
     return result, nextPage, title
 
 
-with open(fileName, 'a+', encoding='utf-8') as file:
+    
 
-    i = 0
-    while url and url.lower().startswith('http') and 'html' in url.lower() and not url.lower().endswith('index.html'):
-        result, nextPage, title = getContent(url)
-        #################################################################
-        # 处理result
-        #################################################################
-        # result = result.replace('!', '')
-        file.write(result)
-        i += 1
-        logging.info('保存了' + str(i) + '章:  ' + title)
-        if not nextPage or not nextPage.lower().startswith('http') or nextPage == url:
-            logging.warning('停止：没有找到有效的下一页或下一页与当前页面相同')
-            break
-        url = nextPage
-        time.sleep(1)
+
+if __name__ == "__main__":
+    main()
