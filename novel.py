@@ -35,23 +35,30 @@ def main():
     elif fileName[-4:] != '.txt':
         fileName = fileName + '.txt'
         
-    with open(fileName, 'a+', encoding='utf-8') as file:
-
-        i = 0
-        while url and url.lower().startswith('http') and 'html' in url.lower() and not url.lower().endswith('index.html'):
-            result, nextPage, title = getContent(url)
-            #################################################################
-            # 处理result
-            #################################################################
-            # result = result.replace('!', '')
-            file.write(result)
-            i += 1
-            logging.info('保存了' + str(i) + '章:  ' + title)
-            if not nextPage or not nextPage.lower().startswith('http') or nextPage == url:
-                logging.warning('停止：没有找到有效的下一页或下一页与当前页面相同')
-                break
-            url = nextPage
-            time.sleep(1)
+    try:
+        with open(fileName, 'a+', encoding='utf-8') as file:
+            i = 0
+            while url and url.lower().startswith('http') and 'html' in url.lower() and not url.lower().endswith('index.html'):
+                result, nextPage, title = getContent(url)
+                if not result and not nextPage:
+                    logging.warning('停止：请求失败或未能获取内容，退出循环')
+                    break
+                #################################################################
+                # 处理result
+                #################################################################
+                # result = result.replace('!', '')
+                file.write(result)
+                i += 1
+                logging.info('保存了' + str(i) + '章:  ' + title)
+                if not nextPage or not nextPage.lower().startswith('http') or nextPage == url:
+                    logging.warning('停止：没有找到有效的下一页或下一页与当前页面相同')
+                    break
+                url = nextPage
+                time.sleep(1)
+    except OSError as err:
+        logging.exception("无法打开或写入文件: %s", fileName)
+        logging.error("无法写入文件: %s, %s", fileName, err)
+        print('无法写入文件:', fileName, err)
 
 
 def getHeaders(url):
@@ -82,29 +89,28 @@ def getContent(url):
     nextPage = ''
     logging.info('Sending request to: ' + url)
     try:
-        r = requests.get(url, headers=getHeaders(url))
-    except requests.exceptions.ConnectionError:
-        logging.error("ConnectionError")
-        r = requests.get(url, headers=getHeaders(url))
+        r = requests.get(url, headers=getHeaders(url), timeout=10)
+        r.raise_for_status()
+    except requests.exceptions.RequestException as err:
+        logging.error("Network error while requesting %s: %s", url, err)
+        return '', '', ''
 
-    if (r.status_code != 200):
-        print("错误代码: " + str(r.status_code))
-        print("错误原因: " + r.reason)
-
-        logging.error("错误代码: " + str(r.status_code));
-        logging.error("错误原因: " + r.reason)
-        quit()
     #     logging.debug(r.headers.getparam('charset'))
     #    r.encoding = 'gbk'
     #     r.encoding = 'utf-8'
     #lxml更快
     soup = BeautifulSoup(r.text, 'html5lib')
-    encoding = get_encoding(soup)
+    try:
+        encoding = get_encoding(soup)
+    except ValueError as err:
+        logging.warning("Encoding detection failed: %s", err)
+        encoding = None
     if (encoding != None):
         r.encoding = encoding;
         soup = BeautifulSoup(r.text, 'html5lib')
 
-    result += soup.find('title').text
+    if soup.title:
+        result += soup.title.text
 
     urls = soup.find_all('a', href=True)
     nextPage = get_next_page_url(url, soup)
@@ -182,4 +188,8 @@ def getContent(url):
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as err:
+        logging.exception("Unexpected error in novel.py")
+        print('发生未处理异常:', err)
