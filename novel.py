@@ -36,6 +36,8 @@ def main():
             progress = json.load(f)
         url = progress['url']
         fileName = progress['fileName']
+        print("发现进度文件,继续爬取")
+        logging.info("发现进度文件,继续爬取: " + url + " 保存到: " + fileName)
     else:
         url = input("请输入网址:").strip()
         if url == '':
@@ -73,10 +75,7 @@ def main():
                 url = nextPage
                 time.sleep(1)
         
-        # 完成时删除进度文件
-        if os.path.exists(progress_file):
-            os.remove(progress_file)
-            print("爬取完成，已删除进度文件。")
+        
             
     except OSError as err:
         logging.exception("无法打开或写入文件: %s", fileName)
@@ -215,4 +214,11 @@ if __name__ == "__main__":
         main()
     except Exception as err:
         logging.exception("Unexpected error in novel.py")
+        logging.error("Unexpected error: %s", err)
         print('发生未处理异常:', err)
+    else: 
+        # 完成时删除进度文件
+        progress_file = 'progress.json'
+        if os.path.exists(progress_file):
+            os.remove(progress_file)
+            print("爬取完成，已删除进度文件。")
