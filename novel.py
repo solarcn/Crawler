@@ -4,6 +4,8 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 import logging
 import time
+import json
+import os
 
 LOG_FORMAT = "%(asctime)s  %(levelname)s  %(message)s"
 logging.basicConfig(filename='aaaa.log', level=logging.DEBUG, format=LOG_FORMAT,filemode='w')
@@ -26,15 +28,24 @@ pattern = re.compile(r'www.{1,20}com.?】')
 
 
 def main():
-    url = input("请输入网址:").strip()
-    if url == '':
-        url = 'http://www.81xsw.com/0_169/10088024.html'
-    fileName = input("请输入要保存的文件名,默认novel_temp.txt:")
-    if fileName == '':
-        fileName = 'novel_temp.txt'
-    elif fileName[-4:] != '.txt':
-        fileName = fileName + '.txt'
-        
+    progress_file = 'progress.json'
+    
+    # 检查是否存在进度文件，支持断点续传
+    if os.path.exists(progress_file):
+        with open(progress_file, 'r', encoding='utf-8') as f:
+            progress = json.load(f)
+        url = progress['url']
+        fileName = progress['fileName']
+    else:
+        url = input("请输入网址:").strip()
+        if url == '':
+            url = 'http://www.81xsw.com/0_169/10088024.html'
+        fileName = input("请输入要保存的文件名,默认novel_temp.txt:")
+        if fileName == '':
+            fileName = 'novel_temp.txt'
+        elif fileName[-4:] != '.txt':
+            fileName = fileName + '.txt'
+    
     try:
         with open(fileName, 'a+', encoding='utf-8') as file:
             i = 0
@@ -50,11 +61,23 @@ def main():
                 file.write(result)
                 i += 1
                 logging.info('保存了' + str(i) + '章:  ' + title)
+                
+                # 保存进度
+                progress = {'url': nextPage, 'fileName': fileName}
+                with open(progress_file, 'w', encoding='utf-8') as f:
+                    json.dump(progress, f)
+                
                 if not nextPage or not nextPage.lower().startswith('http') or nextPage == url:
                     logging.warning('停止：没有找到有效的下一页或下一页与当前页面相同')
                     break
                 url = nextPage
                 time.sleep(1)
+        
+        # 完成时删除进度文件
+        if os.path.exists(progress_file):
+            os.remove(progress_file)
+            print("爬取完成，已删除进度文件。")
+            
     except OSError as err:
         logging.exception("无法打开或写入文件: %s", fileName)
         logging.error("无法写入文件: %s, %s", fileName, err)

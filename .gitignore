@@ -1,5 +1,6 @@
 __pycache__/*
 novel_temp.txt
+progress.json
 *.log
 novel.spec
 build/*
